@@ -19,6 +19,8 @@ const canvas = document.getElementById('canvas');
 const { width, height } = canvas;
 const ctx = canvas.getContext('2d');
 const timeOutput = document.getElementById('time');
+const sumSquaresOutput = document.getElementById('sumSquares');
+const proofVerifyOutput = document.getElementById('proofVerifyRes');
 
 (async function init() {
   // Create a separate thread from wasm-worker.js and get a proxy to its handlers.
@@ -32,25 +34,62 @@ const timeOutput = document.getElementById('time');
     // Handlers are named in the same way as buttons.
     let handler = handlers[id];
     // If handler doesn't exist, it's not supported.
+    console.log("Setting up button", id);
     if (!handler) return;
+    console.log("Passed return in button setup");
     // Assign onclick handler + enable the button.
-    Object.assign(document.getElementById(id), {
-      async onclick() {
-        let { rawImageData, time } = await handler({
-          width,
-          height,
-          maxIterations
-        });
-        timeOutput.value = `${time.toFixed(2)} ms`;
-        const imgData = new ImageData(rawImageData, width, height);
-        ctx.putImageData(imgData, 0, 0);
-      },
-      disabled: false
-    });
+    if (id === 'sumSquaresArray') {
+      Object.assign(document.getElementById(id), {
+        async onclick() {
+          let { res, time } = await handler();
+          timeOutput.value = `${time.toFixed(2)} ms`;
+          sumSquaresOutput.value = res;
+        },
+        disabled: false
+      });
+    } else if (id === 'proofGen') {
+      Object.assign(document.getElementById(id), {
+        async onclick() {
+          let { res, time } = await handler();
+          console.log(res);
+          timeOutput.value = `${time.toFixed(2)} ms`;
+          sumSquaresOutput.value = res;
+        },
+        disabled: false
+      });
+    } else if (id === 'verifyProof') {
+      Object.assign(document.getElementById(id), {
+        async onclick() {
+          let { res, time } = await handler({proofBytes: sumSquaresOutput.value});
+          console.log(res);
+          timeOutput.value = `${time.toFixed(2)} ms`;
+          proofVerifyOutput.value = res;
+        },
+        disabled: false
+      });
+    } else {
+      Object.assign(document.getElementById(id), {
+        async onclick() {
+          let { rawImageData, time } = await handler({
+            width,
+            height,
+            maxIterations
+          });
+          timeOutput.value = `${time.toFixed(2)} ms`;
+          const imgData = new ImageData(rawImageData, width, height);
+          ctx.putImageData(imgData, 0, 0);
+        },
+        disabled: false
+      });
+    }
   }
 
   setupBtn('singleThread');
   if (await handlers.supportsThreads) {
     setupBtn('multiThread');
   }
+  setupBtn('sumSquaresArray');
+  setupBtn('proofGen');
+  setupBtn('verifyProof');
+
 })();
