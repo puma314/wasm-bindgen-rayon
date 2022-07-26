@@ -11,22 +11,22 @@
  * limitations under the License.
  */
 
-import * as Comlink from 'comlink';
+import * as Comlink from "comlink";
 
 const maxIterations = 1000;
 
-const canvas = document.getElementById('canvas');
+const canvas = document.getElementById("canvas");
 const { width, height } = canvas;
-const ctx = canvas.getContext('2d');
-const timeOutput = document.getElementById('time');
-const sumSquaresOutput = document.getElementById('sumSquares');
-const proofVerifyOutput = document.getElementById('proofVerifyRes');
+const ctx = canvas.getContext("2d");
+const timeOutput = document.getElementById("time");
+const sumSquaresOutput = document.getElementById("sumSquares");
+const proofVerifyOutput = document.getElementById("proofVerifyRes");
 
 (async function init() {
   // Create a separate thread from wasm-worker.js and get a proxy to its handlers.
   let handlers = await Comlink.wrap(
-    new Worker(new URL('./wasm-worker.js', import.meta.url), {
-      type: 'module'
+    new Worker(new URL("./wasm-worker.js", import.meta.url), {
+      type: "module",
     })
   ).handlers;
 
@@ -38,34 +38,37 @@ const proofVerifyOutput = document.getElementById('proofVerifyRes');
     if (!handler) return;
     console.log("Passed return in button setup");
     // Assign onclick handler + enable the button.
-    if (id === 'sumSquaresArray') {
+    if (id === "sumSquaresArray") {
       Object.assign(document.getElementById(id), {
         async onclick() {
           let { res, time } = await handler();
           timeOutput.value = `${time.toFixed(2)} ms`;
           sumSquaresOutput.value = res;
         },
-        disabled: false
+        disabled: false,
       });
-    } else if (id === 'proofGen') {
+    } else if (id === "proofGen") {
       Object.assign(document.getElementById(id), {
         async onclick() {
+          console.log("Starting proof generation.");
           let { res, time } = await handler();
           console.log(res);
           timeOutput.value = `${time.toFixed(2)} ms`;
           sumSquaresOutput.value = res;
         },
-        disabled: false
+        disabled: false,
       });
-    } else if (id === 'verifyProof') {
+    } else if (id === "verifyProof") {
       Object.assign(document.getElementById(id), {
         async onclick() {
-          let { res, time } = await handler({proofBytes: sumSquaresOutput.value});
+          let { res, time } = await handler({
+            proofBytes: sumSquaresOutput.value,
+          });
           console.log(res);
           timeOutput.value = `${time.toFixed(2)} ms`;
           proofVerifyOutput.value = res;
         },
-        disabled: false
+        disabled: false,
       });
     } else {
       Object.assign(document.getElementById(id), {
@@ -73,23 +76,22 @@ const proofVerifyOutput = document.getElementById('proofVerifyRes');
           let { rawImageData, time } = await handler({
             width,
             height,
-            maxIterations
+            maxIterations,
           });
           timeOutput.value = `${time.toFixed(2)} ms`;
           const imgData = new ImageData(rawImageData, width, height);
           ctx.putImageData(imgData, 0, 0);
         },
-        disabled: false
+        disabled: false,
       });
     }
   }
 
-  setupBtn('singleThread');
+  setupBtn("singleThread");
   if (await handlers.supportsThreads) {
-    setupBtn('multiThread');
+    setupBtn("multiThread");
   }
-  setupBtn('sumSquaresArray');
-  setupBtn('proofGen');
-  setupBtn('verifyProof');
-
+  setupBtn("sumSquaresArray");
+  setupBtn("proofGen");
+  setupBtn("verifyProof");
 })();

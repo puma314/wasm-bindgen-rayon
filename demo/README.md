@@ -7,8 +7,10 @@ npx serve -c ../serve.json dist/
 npx serve -c ../serve.json dist/ -p 3002
 
 cd demo/
-rm -rf halo-pkg/
-cp -r ../../halo2-examples/pkg/ halo-pkg
+rm -rf pkg/
+cp -r ../../halo2-ecc/pkg/ pkg/
 
 npm run build:webpack
 npm run serve
+
+rm -rf pkg/ && cp -r ../../halo2-ecc/pkg/ pkg/
